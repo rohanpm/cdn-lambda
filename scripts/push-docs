@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ORG=release-engineering
+ORG=rohanpm
 REPO=cdn-lambda
 
 enabled(){
