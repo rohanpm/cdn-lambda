@@ -32,7 +32,8 @@ Resources:
       KeyGroupConfig:
         Name: ${project}-cdn-${env}
         Comment: Signed URLs and cookies for ${project}-cdn-${env}
-        Items: []
+        Items:
+        - K1MOU91G3N7WPY
 
   Distribution:
     Type: AWS::CloudFront::Distribution
