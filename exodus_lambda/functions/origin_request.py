@@ -46,7 +46,14 @@ class OriginRequest(LambdaBase):
             if query_result["Items"]:
                 item = query_result["Items"][0]
                 out = json.loads(item["config"]["S"])
-                self._cache["exodus-config"] = out
+            else:
+                self.logger.warning(
+                    "No 'exodus-config' available in table %s", table
+                )
+                out = {}
+
+            self._cache["exodus-config"] = out
+
         return out
 
     @property
@@ -88,12 +95,12 @@ class OriginRequest(LambdaBase):
 
     def resolve_aliases(self, uri):
         # aliases relating to origin, e.g. content/origin <=> origin
-        uri = self.uri_alias(uri, self.definitions.get("origin_alias"))
+        uri = self.uri_alias(uri, self.definitions.get("origin_alias") or [])
 
         # aliases relating to rhui; listing files are a special exemption
         # because they must be allowed to differ for rhui vs non-rhui.
         if not uri.endswith("/listing"):
-            uri = self.uri_alias(uri, self.definitions.get("rhui_alias"))
+            uri = self.uri_alias(uri, self.definitions.get("rhui_alias") or [])
 
         return uri
 
