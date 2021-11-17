@@ -14,6 +14,8 @@ from .base import LambdaBase
 def get_secret(arn, logger):
     region_name = "us-east-1"
 
+    logger.warning("attempting to get secret %s", arn)
+
     # Create a Secrets Manager client
     session = boto3.session.Session()
     client = session.client(
@@ -53,7 +55,7 @@ def get_secret(arn, logger):
         if "SecretString" in get_secret_value_response:
             secret = get_secret_value_response["SecretString"]
             logger.warning("secret string %s", repr(secret)[0:50])
-            return secret
+            return "string-%s" % secret
         else:
             decoded_binary_secret = base64.b64decode(
                 get_secret_value_response["SecretBinary"]
@@ -61,7 +63,7 @@ def get_secret(arn, logger):
             logger.warning(
                 "secret binary %s", repr(decoded_binary_secret)[0:50]
             )
-            return decoded_binary_secret
+            return "binary-%s" % decoded_binary_secret
 
 
 class OriginRequest(LambdaBase):
@@ -184,6 +186,7 @@ class OriginRequest(LambdaBase):
 
         out = {
             "uri": uri,
+            "secret_arn": self.conf.get("secret"),
             "cookie_key": repr(self.cookie_key)[0:20],
         }
 
