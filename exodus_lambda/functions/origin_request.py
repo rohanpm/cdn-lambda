@@ -53,6 +53,7 @@ def get_secret(arn, logger):
         if "SecretString" in get_secret_value_response:
             secret = get_secret_value_response["SecretString"]
             logger.warning("secret string %s", repr(secret)[0:50])
+            return secret
         else:
             decoded_binary_secret = base64.b64decode(
                 get_secret_value_response["SecretBinary"]
@@ -60,6 +61,7 @@ def get_secret(arn, logger):
             logger.warning(
                 "secret binary %s", repr(decoded_binary_secret)[0:50]
             )
+            return decoded_binary_secret
 
 
 class OriginRequest(LambdaBase):
@@ -171,6 +173,23 @@ class OriginRequest(LambdaBase):
         # pylint: disable=unused-argument
 
         request = event["Records"][0]["cf"]["request"]
+
+        if "/_meta" in request["uri"]:
+            return self.meta_handler(request)
+
+        return self.content_handler(request)
+
+    def meta_handler(self, request):
+        uri = request["uri"]
+
+        out = {
+            "uri": uri,
+            "cookie_key": repr(self.cookie_key)[0:20],
+        }
+
+        return {"status": "200", "body": json.dumps(out, indent=4)}
+
+    def content_handler(self, request):
         uri = self.resolve_aliases(request["uri"])
         self.logger.info(
             "The request value for origin_request beginning is '%s'",
