@@ -182,6 +182,9 @@ class OriginRequest(LambdaBase):
                 "cache-control": [
                     {"value": "no-store"},
                 ],
+                "set-cookie": [
+                    {"value": "Test-Cookie-From-Header"},
+                ],
             },
             "cookies": {
                 "CloudFront-Key-Pair-Id": {

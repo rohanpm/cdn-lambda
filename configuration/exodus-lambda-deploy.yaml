@@ -50,7 +50,11 @@ Resources:
           ForwardedValues:
             QueryString: false
             Cookies:
-              Forward: none
+              Forward: whitelist
+              WhitelistedNames:
+                Quantity: 1
+                Items:
+                  - Dummy
             Headers:
               - Want-Digest
           LambdaFunctionAssociations:
