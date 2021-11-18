@@ -179,6 +179,9 @@ class OriginRequest(LambdaBase):
                 "location": [
                     {"value": redir_uri},
                 ],
+                "cache-control": [
+                    {"value": "no-store"},
+                ],
             },
             "cookies": {
                 "CloudFront-Key-Pair-Id": {
