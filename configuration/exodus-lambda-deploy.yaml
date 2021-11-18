@@ -34,6 +34,7 @@ Resources:
         Comment: !Sub Signed URLs and cookies for ${project}-cdn-${env}
         Items:
         - K1MOU91G3N7WPY
+        - K1IMPZ7O6FIZTW
 
   Distribution:
     Type: AWS::CloudFront::Distribution

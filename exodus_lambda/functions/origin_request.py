@@ -146,7 +146,7 @@ class OriginRequest(LambdaBase):
 
         request = event["Records"][0]["cf"]["request"]
 
-        if "/_meta" in request["uri"]:
+        if request["uri"].startswith("/_/"):
             return self.meta_handler(request)
 
         return self.content_handler(request)
@@ -154,10 +154,10 @@ class OriginRequest(LambdaBase):
     def meta_handler(self, request):
         uri = request["uri"]
 
-        if not uri.startswith("/_meta/cookie"):
+        if not uri.startswith("/_/cookie/"):
             return {"status": "404"}
 
-        redir_uri = uri[len("/_meta/cookie") :]
+        redir_uri = uri[len("/_/cookie") :]
 
         signer = Signer(self.cookie_key, self.conf.get("key_id"))
 
@@ -188,10 +188,6 @@ class OriginRequest(LambdaBase):
                 ],
             },
         }
-
-        # for debugging only
-        body = json.dumps(out, indent=4)
-        out["body"] = body
 
         return out
 
