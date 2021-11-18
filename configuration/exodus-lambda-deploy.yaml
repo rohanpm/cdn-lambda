@@ -40,6 +40,23 @@ Resources:
     Properties:
       DistributionConfig:
         Comment: !Sub ${project}-cdn-${env}
+
+        CacheBehaviors:
+          - PathPattern: /_/*
+            AllowedMethods:
+              - GET
+              - HEAD
+            LambdaFunctionAssociations:
+            - EventType: viewer-request
+              LambdaFunctionARN: !Ref ViewerRequestFunc.Version
+            ForwardedValues:
+              QueryString: false
+            TargetOriginId: !Sub S3-${project}-cdn-${env}
+            TrustedKeyGroups:
+              - !Ref KeyGroup
+            ViewerProtocolPolicy: redirect-to-https
+
+
         DefaultCacheBehavior:
           AllowedMethods:
             - GET
@@ -70,6 +87,17 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${oai}"
 
+  ViewerRequestFunc:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${project}-viewer-request-${env}
+      CodeUri:
+      Handler: exodus_lambda.viewer_request
+      Role: !Sub ${lambdafunctionrole}
+      Runtime: python3.9
+      Timeout: 5
+      AutoPublishAlias: live
+
   OriginRequestFunc:
     Type: AWS::Serverless::Function
     Properties:
@@ -96,6 +124,10 @@ Outputs:
   Distribution:
     Description: distribution domain name
     Value: !GetAtt Distribution.DomainName
+
+  ViewerRequestFunc:
+    Description: viewer-request function ARN with version
+    Value: !Ref ViewerRequestFunc.Version
 
   OriginRequestFunc:
     Description: origin-request function ARN with version
