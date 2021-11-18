@@ -177,8 +177,12 @@ class OriginRequest(LambdaBase):
         out = {
             "status": "302",
             "headers": {
-                "Location": [redir_uri],
-                "Set-Cookie": cookies_content + cookies_origin,
+                "location": [
+                    {"value": redir_uri},
+                ],
+                "set-cookie": [
+                    {"value": x} for x in (cookies_content + cookies_origin)
+                ],
             },
         }
 
