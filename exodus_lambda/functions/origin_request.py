@@ -162,14 +162,13 @@ class OriginRequest(LambdaBase):
         signer = Signer(self.cookie_key, self.conf.get("key_id"))
 
         expire = timedelta(minutes=30)
+        common_attrs = f"Secure; Max-Age={int(expire.total_seconds())}"
 
         cookies_content = signer.cookies_for_policy(
-            append=f"; Secure; Path=/content/; Max-Age={int(expire.total_seconds())}",
             resource="/content/*",
             date_less_than=datetime.utcnow() + expire,
         )
         cookies_origin = signer.cookies_for_policy(
-            append=f"; Secure; Path=/origin/; Max-Age={int(expire.total_seconds())}",
             resource="/origin/*",
             date_less_than=datetime.utcnow() + expire,
         )
@@ -180,9 +179,36 @@ class OriginRequest(LambdaBase):
                 "location": [
                     {"value": redir_uri},
                 ],
-                "set-cookie": [
-                    {"value": x} for x in (cookies_content + cookies_origin)
-                ],
+            },
+            "cookies": {
+                "CloudFront-Key-Pair-Id": {
+                    "value": cookies_content["CloudFront-Key-Pair-Id"],
+                    "attributes": common_attrs,
+                },
+                "CloudFront-Policy": {
+                    "multiValue": [
+                        {
+                            "value": cookies["CloudFront-Policy"],
+                            "attributes": f"{common_attrs}; Path={path}",
+                        }
+                        for (cookies, path) in [
+                            (cookies_content, "/content/"),
+                            (cookies_origin, "/origin/"),
+                        ]
+                    ]
+                },
+                "CloudFront-Signature": {
+                    "multiValue": [
+                        {
+                            "value": cookies["CloudFront-Signature"],
+                            "attributes": f"{common_attrs}; Path={path}",
+                        }
+                        for (cookies, path) in [
+                            (cookies_content, "/content/"),
+                            (cookies_origin, "/origin/"),
+                        ]
+                    ]
+                },
             },
         }
 

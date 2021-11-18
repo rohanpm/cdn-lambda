@@ -30,16 +30,16 @@ class Signer:
             message, padding.PKCS1v15(), hashes.SHA1()
         )
 
-    def cookies_for_policy(self, append, **kwargs):
+    def cookies_for_policy(self, **kwargs):
         policy = self.cf_signer.build_policy(**kwargs).encode("utf-8")
         signature = self.cf_signer.rsa_signer(policy)
 
         policy_b64 = cf_b64(policy).decode("utf-8")
         signature_b64 = cf_b64(signature).decode("utf-8")
 
-        out = []
-        out.append(f"CloudFront-Key-Pair-Id={self.key_id}{append}")
-        out.append(f"CloudFront-Policy={policy_b64}{append}")
-        out.append(f"CloudFront-Signature={signature_b64}{append}")
+        out = {}
+        out["CloudFront-Key-Pair-Id"] = self.key_id
+        out["CloudFront-Policy"] = policy_b64
+        out["CloudFront-Signature"] = signature_b64
 
         return out
