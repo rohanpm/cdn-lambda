@@ -147,11 +147,14 @@ class OriginRequest(LambdaBase):
         request = event["Records"][0]["cf"]["request"]
 
         if request["uri"].startswith("/_/"):
-            return self.meta_handler(request)
+            return self.meta_handler(event)
 
         return self.content_handler(request)
 
-    def meta_handler(self, request):
+    def meta_handler(self, event):
+        cf = event["Records"][0]["cf"]
+        request = cf["request"]
+
         uri = request["uri"]
 
         if not uri.startswith("/_/cookie/"):
@@ -163,14 +166,16 @@ class OriginRequest(LambdaBase):
 
         expire = timedelta(minutes=30)
 
+        hostname = cf["config"]["distributionDomainName"]
+
         cookies_content = signer.cookies_for_policy(
             append=f"; Secure; Path=/content/; Max-Age={int(expire.total_seconds())}",
-            resource="/content/*",
+            resource=f"https://{hostname}/content/*",
             date_less_than=datetime.utcnow() + expire,
         )
         cookies_origin = signer.cookies_for_policy(
             append=f"; Secure; Path=/origin/; Max-Age={int(expire.total_seconds())}",
-            resource="/origin/*",
+            resource=f"https://{hostname}/origin/*",
             date_less_than=datetime.utcnow() + expire,
         )
 
