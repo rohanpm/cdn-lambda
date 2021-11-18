@@ -52,9 +52,7 @@ Resources:
             Cookies:
               Forward: whitelist
               WhitelistedNames:
-                Quantity: 1
-                Items:
-                  - Dummy
+                - Dummy
             Headers:
               - Want-Digest
           LambdaFunctionAssociations:
