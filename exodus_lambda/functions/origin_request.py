@@ -9,6 +9,7 @@ import cachetools
 from botocore.exceptions import ClientError
 
 from .base import LambdaBase
+from .signer import Signer
 
 
 def get_secret(arn, logger) -> str:
@@ -22,10 +23,6 @@ def get_secret(arn, logger) -> str:
         service_name="secretsmanager", region_name=region_name
     )
 
-    # In this sample we only handle the specific exceptions for the 'GetSecretValue' API.
-    # See https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-    # We rethrow the exception by default.
-
     get_secret_value_response = client.get_secret_value(SecretId=arn)
 
     # Decrypts secret using the associated KMS CMK.
@@ -33,13 +30,7 @@ def get_secret(arn, logger) -> str:
     if "SecretString" in get_secret_value_response:
         secret = get_secret_value_response["SecretString"]
         logger.warning("secret string %s", repr(secret)[0:50])
-        return "string-%s" % secret
-    else:
-        decoded_binary_secret = base64.b64decode(
-            get_secret_value_response["SecretBinary"]
-        )
-        logger.warning("secret binary %s", repr(decoded_binary_secret)[0:50])
-        return "binary-%s" % decoded_binary_secret
+        return json.loads(secret)
 
 
 class OriginRequest(LambdaBase):
@@ -55,14 +46,17 @@ class OriginRequest(LambdaBase):
         )
 
     @property
-    def cookie_key(self):
+    def secret(self):
         out = self._cache.get("secret")
         if out is None:
             secret_arn = self.conf.get("secret")
             out = get_secret(secret_arn, self.logger)
             self._cache["secret"] = out
-        # TODO: complete me
         return out
+
+    @property
+    def cookie_key(self):
+        return self.secret["cookie_key"]
 
     @property
     def definitions(self):
@@ -160,13 +154,39 @@ class OriginRequest(LambdaBase):
     def meta_handler(self, request):
         uri = request["uri"]
 
+        if not uri.startswith("/_meta/cookie"):
+            return {"status": "404"}
+
+        redir_uri = uri[len("/_meta/cookie") :]
+
+        signer = Signer(self.cookie_key, self.conf.get("key_id"))
+
+        expire = timedelta(minutes=30)
+
+        cookies_content = signer.cookies_for_policy(
+            append=f"; Secure; Path=/content/; Max-Age={int(expire.total_seconds())}",
+            resource="/content/*",
+            date_less_than=datetime.utcnow() + expire,
+        )
+        cookies_origin = signer.cookies_for_policy(
+            append=f"; Secure; Path=/origin/; Max-Age={int(expire.total_seconds())}",
+            resource="/origin/*",
+            date_less_than=datetime.utcnow() + expire,
+        )
+
         out = {
-            "uri": uri,
-            "secret_arn": self.conf.get("secret"),
-            "cookie_key": repr(self.cookie_key)[0:20],
+            "status": "302",
+            "headers": {
+                "Location": [redir_uri],
+                "Set-Cookie": cookies_content + cookies_origin,
+            },
         }
 
-        return {"status": "200", "body": json.dumps(out, indent=4)}
+        # for debugging only
+        body = json.dumps(out, indent=4)
+        out["body"] = body
+
+        return out
 
     def content_handler(self, request):
         uri = self.resolve_aliases(request["uri"])

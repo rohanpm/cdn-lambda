@@ -16,6 +16,7 @@
     "max_age": "600"
   },
   "secret": "$SECRET",
+  "key_id": "$KEY_ID",
   "logging": {
     "version": 1,
     "incremental": "True",
