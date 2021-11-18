@@ -31,10 +31,10 @@ class Signer:
         )
 
     def cookies_for_policy(self, append, **kwargs):
-        policy = self.cf_signer.build_policy(**kwargs)
+        policy = self.cf_signer.build_policy(**kwargs).encode("utf-8")
         signature = self.cf_signer.rsa_signer(policy)
 
-        policy_b64 = cf_b64(policy.encode("utf-8")).decode("utf-8")
+        policy_b64 = cf_b64(policy).decode("utf-8")
         signature_b64 = cf_b64(signature).decode("utf-8")
 
         out = []
