@@ -18,7 +18,9 @@ def cf_b64(data: bytes):
 class Signer:
     def __init__(self, private_key_pem: str, key_id: str):
         self.private_key = serialization.load_pem_private_key(
-            private_key_pem, password=None, backend=default_backend()
+            private_key_pem.encode("utf-8"),
+            password=None,
+            backend=default_backend(),
         )
         self.key_id = key_id
         self.cf_signer = CloudFrontSigner(self.key_id, self.rsa_sign)
