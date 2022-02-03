@@ -143,9 +143,9 @@ mock==4.0.3 \
     --hash=sha256:122fcb64ee37cfad5b3f48d7a7d51875d7031aaf3d8be7c42e2bee25044eee62 \
     --hash=sha256:7d3fbbde18228f4ff2f1f119a45cdffa458b4c0dee32eb4d2bb2f82554bac7bc
     # via -r test-requirements.in
-more-itertools==8.8.0 \
-    --hash=sha256:2cf89ec599962f2ddc4d568a05defc40e0a587fbc10d5989713638864c36be4d \
-    --hash=sha256:83f0308e05477c68f56ea3a888172c78ed5d5b3c282addb67508e7ba6c8f813a
+more-itertools==8.12.0 \
+    --hash=sha256:43e6dd9942dffd72661a2c4ef383ad7da1e6a3e968a927ad7a6083ab410a688b \
+    --hash=sha256:7dc6ad46f05f545f900dd59e8dfb4e84a4827b97b3cfecb175ea0c7d247f6064
     # via -r test-requirements.in
 mypy==0.910 \
     --hash=sha256:088cd9c7904b4ad80bec811053272986611b84221835e079be5bcad029e79dd9 \
