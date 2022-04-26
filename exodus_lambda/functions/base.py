@@ -55,7 +55,7 @@ class LambdaBase(object):
 
     def set_lambda_version(self, response):
         response.setdefault("headers", {})["x-exodus-version"] = [
-            {"key": "X-Exodus-Version", "value": self.lambda_version}
+            {"key": "X-Exodus-Version", "value": "testing-wrong-version"}
         ]
 
     def set_cache_control(self, uri, response):
