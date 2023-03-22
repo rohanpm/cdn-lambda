@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal@sha256:b37d34ffce0e59879c776da3f1b1c643674975e6588fe8e8adf60eef25b4a6ca
+FROM registry.access.redhat.com/ubi8/ubi-minimal@sha256:03238f7dbd9865aa33e5e266c2adb1cbb01ebd5cabcb58790bca641c7f3c059c
 
 COPY . /usr/local/src/exodus-lambda
 
